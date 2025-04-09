@@ -1,0 +1,175 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class App {
+    // Global variable to store seats
+    private static int[][] seats = null;
+    private static Scanner input = new Scanner(System.in); // One Scanner object for all inputs
+
+    public static void main(String[] args) {
+        System.out.println("Welcome to the Theatre App!");
+        initialiseRows(); // Setup seating
+        runMenu(); // Show options and handle user actions
+    }
+
+    // Initialize seat rows
+    public static void initialiseRows() {
+        seats = new int[2][]; // 2 rows
+        seats[0] = new int[12]; // Row 1: 12 seats
+        seats[1] = new int[16]; // Row 2: 16 seats
+    }
+
+    // Show the main menu repeatedly until user quits
+    public static void runMenu() {
+        int option;
+        boolean cont = true;
+        while (cont) {
+            option = getOption(); // Ask for menu choice
+            switch (option) {
+                case 0:
+                    cont = false;
+                    break;
+                case 1:
+                    buyTicket();
+                    break;
+                case 2:
+                    showSeatingArea();
+                    break;
+                case 3:
+                    addShow();
+                    break;
+                case 4:
+                    addUser();
+                    break;
+                case 5:
+                    saveToFile();
+                    break;
+                default:
+                    System.out.println("Option not available. Please select a valid option.");
+            }
+        }
+    }
+
+    // Get menu option from user
+    private static int getOption() {
+        boolean valid = false;
+        int option = -1;
+        do {
+            System.out.println();
+            System.out.println("+---------------------------------------------+");
+            System.out.println("|                 MAIN MENU                   |");
+            System.out.println("+---------------------------------------------+");
+            System.out.println("| 1) Buy a ticket                             |");
+            System.out.println("| 2) Show seating area and available seats    |");
+            System.out.println("| 3) Add Show                                 |");
+            System.out.println("| 4) Add User                                 |");
+            System.out.println("| 5) Save information to file                 |");
+            System.out.println("| 0) Quit                                     |");
+            System.out.println("+---------------------------------------------+");
+            System.out.print("Please select an option: ");
+            try {
+                option = input.nextInt();
+                valid = true;
+            } catch (Exception e) {
+                System.out.println("Invalid input. Please enter a number.");
+                input.nextLine(); // Clear the invalid input
+            }
+        } while (!valid);
+        return option;
+    }
+
+    // Book a seat
+    private static void buyTicket() {
+        try {
+            System.out.print("Enter row number (1 or 2): ");
+            int row = input.nextInt() - 1;
+
+            // Validate row
+            if (row < 0 || row >= seats.length) {
+                System.out.println("Invalid row number.");
+                return;
+            }
+
+            System.out.print("Enter seat number: ");
+            int seat = input.nextInt() - 1;
+
+            // Validate seat
+            if (seat < 0 || seat >= seats[row].length) {
+                System.out.println("Invalid seat number.");
+                return;
+            }
+
+            // Check if seat is free
+            if (seats[row][seat] == 0) {
+                seats[row][seat] = 1; // Mark as taken
+                System.out.println("Purchase successful.");
+                showSeatingArea();
+            } else {
+                System.out.println("This seat is already taken.");
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid input.");
+            input.nextLine(); // Clear buffer
+        }
+    }
+
+    // Show seat layout
+    private static void showSeatingArea() {
+        int rows = seats.length;
+        System.out.println("=".repeat(76));
+        System.out.println("                              STAGE                              ");
+        System.out.println("=".repeat(76));
+        for (int row = 0; row < rows; row++) {
+            System.out.print("Row " + (row + 1) + ": ");
+            int seatsPerRow = seats[row].length;
+            for (int seat = 0; seat < seatsPerRow; seat++) {
+                if (seats[row][seat] == 0) {
+                    System.out.print("[O]");
+                } else {
+                    System.out.print("[X]");
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("=".repeat(76));
+        System.out.println("LEGEND: [O] = Seat available, [X] = Seat not available");
+        System.out.println("=".repeat(76));
+        System.out.println();
+    }
+
+    // Add a show (basic version)
+    private static void addShow() {
+        input.nextLine(); // Clear buffer
+        System.out.print("Enter show name: ");
+        String show = input.nextLine();
+        System.out.println("Show '" + show + "' added successfully!");
+    }
+
+    // Add a user (basic version)
+    private static void addUser() {
+        input.nextLine(); // Clear buffer
+        System.out.print("Enter user name: ");
+        String user = input.nextLine();
+        System.out.println("User '" + user + "' added successfully!");
+    }
+
+    // Save current seat data to file
+    private static void saveToFile() {
+        try {
+            FileWriter file = new FileWriter("TheatreData.txt");
+            file.write("Seating Data:\n");
+            for (int row = 0; row < seats.length; row++) {
+                file.write("Row " + (row + 1) + ": ");
+                for (int seat = 0; seat < seats[row].length; seat++) {
+                    file.write(seats[row][seat] + "");
+                }
+                file.write("\n");
+            }
+            file.close();
+            System.out.println("Data saved to TheatreData.txt.");
+        } catch (IOException exception) {
+            System.out.println("Error while writing to file.");
+        }
+    }
+}
