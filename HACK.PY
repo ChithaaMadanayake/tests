@@ -1,24 +1,34 @@
 import phonenumbers
-from phonenumbers import geocoder, carrier, timezone
+from phonenumbers import geocoder, carrier, timezone, PhoneNumberFormat, number_type
+from phonenumbers.phonenumberutil import region_code_for_number
 
-def get_phone_info(phone_number):
-    try:
-        parsed_number = phonenumbers.parse(phone_number)
-        
-        location = geocoder.description_for_number(parsed_number, "en")
-        
-        sim_carrier = carrier.name_for_number(parsed_number, "en")
-        
-        time_zones = timezone.time_zones_for_number(parsed_number)
-        
-        return {
-            "Location": location,
-            "Carrier": sim_carrier if sim_carrier else "Unknown",
-            "Time Zones": time_zones
-        }
-    except phonenumbers.phonenumberutil.NumberParseException:
-        return "Invalid phone number format."
+def deep_lookup(phone_number: str):
+    parsed = phonenumbers.parse(phone_number)
 
-phone_number = "+94702100515" 
-info = get_phone_info(phone_number)
-print(info)
+    if not phonenumbers.is_valid_number(parsed):
+        return {"Error": "Invalid number"}
+
+    info = {
+        "E.164": phonenumbers.format_number(parsed, PhoneNumberFormat.E164),
+        "International": phonenumbers.format_number(parsed, PhoneNumberFormat.INTERNATIONAL),
+        "National": phonenumbers.format_number(parsed, PhoneNumberFormat.NATIONAL),
+        "Country Code": parsed.country_code,
+        "Region": region_code_for_number(parsed),
+        "Location": geocoder.description_for_number(parsed, "en"),
+        "Carrier": carrier.name_for_number(parsed, "en"),
+        "Time Zones": timezone.time_zones_for_number(parsed),
+        "Number Type": number_type(parsed),
+        "Is Valid?": phonenumbers.is_valid_number(parsed),
+        "Is Possible?": phonenumbers.is_possible_number(parsed)
+    }
+
+    return info
+
+# Use it
+if __name__ == "__main__":
+    number = "+94713703131"  # Your number
+    result = deep_lookup(number)
+
+    print("\n🔍 Phone Number Metadata:")
+    for k, v in result.items():
+        print(f"{k}: {v}")
